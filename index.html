@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="ocean-drift">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>WaterLog | Premium Water Tracker</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WaterLog">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Dynamic Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- Top Stats Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <span class="logo-droplet">💧</span>
+        <h1>WaterLog</h1>
+      </div>
+      
+      <div class="header-stats">
+        <!-- Streak Counter -->
+        <div class="stat-badge streak-badge" id="streak-trigger" title="Daily streak tracker">
+          <span class="badge-icon">🔥</span>
+          <span class="badge-text" id="streak-count">0</span>
+          <span class="badge-label">days</span>
+        </div>
+        
+        <!-- Settings Toggle -->
+        <button class="settings-btn" id="open-settings-btn" aria-label="Open Settings">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Visual Content Area -->
+    <main class="main-content">
+      <!-- Motivation Message Banner -->
+      <div class="motivation-banner" id="motivation-text">
+        Ready to splash into hydration? 💧
+      </div>
+
+      <!-- Water Bottle Container -->
+      <div class="bottle-wrapper">
+        <div class="bottle-container" id="bottle-container">
+          <!-- Glass Outline & SVG Clipping Path -->
+          <svg class="bottle-svg" viewBox="0 0 100 200" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <!-- Bottle Shape Clip Path for Water -->
+              <clipPath id="bottle-shape-clip">
+                <path d="M 32,22 L 68,22 C 68,22 78,24 81,38 C 84,52 86,75 86,115 L 86,165 C 86,183 76,194 50,194 C 24,194 14,183 14,165 L 14,115 C 14,75 16,52 19,38 C 22,24 32,22 32,22 Z" />
+              </clipPath>
+            </defs>
+
+            <!-- Cap of the Bottle (Outer/Decorative) -->
+            <path class="bottle-cap" d="M 33,6 L 67,6 C 70,6 71.5,8 71.5,12 L 71.5,21 L 28.5,21 L 28.5,12 C 28.5,8 30,6 33,6 Z" />
+            <rect class="bottle-cap-groove" x="35" y="10" width="30" height="2" rx="1" />
+            <rect class="bottle-cap-groove" x="35" y="14" width="30" height="2" rx="1" />
+            
+            <!-- Bottle Neck Band -->
+            <rect class="bottle-neck" x="28" y="21" width="44" height="2" rx="0.5" />
+            
+            <!-- Main Glass Body Shadow/Outline -->
+            <path class="bottle-glass-body" d="M 32,22 L 68,22 C 68,22 78,24 81,38 C 84,52 86,75 86,115 L 86,165 C 86,183 76,194 50,194 C 24,194 14,183 14,165 L 14,115 C 14,75 16,52 19,38 C 22,24 32,22 32,22 Z" />
+            
+            <!-- Water Fluid (Clipped inside Bottle Shape) -->
+            <g clip-path="url(#bottle-shape-clip)">
+              <!-- Dynamic Water Block -->
+              <g class="water-group" id="water-group">
+                <!-- Back Wave (Slower, offset) -->
+                <path class="wave wave-back" d="M 0,20 Q 25,16 50,20 T 100,20 T 150,20 T 200,20 L 200,220 L 0,220 Z" />
+                <!-- Front Wave (Faster) -->
+                <path class="wave wave-front" d="M 0,20 Q 25,24 50,20 T 100,20 T 150,20 T 200,20 L 200,220 L 0,220 Z" />
+              </g>
+            </g>
+            
+            <!-- Inner Glass Highlights for Realistic 3D Look -->
+            <path class="bottle-highlight-left" d="M 19,45 L 19,160 C 19,172 25,183 38,187" />
+            <path class="bottle-highlight-right" d="M 81,45 L 81,160 C 81,172 75,183 62,187" />
+            <circle class="bottle-highlight-bubble" cx="30" cy="70" r="2" />
+            <circle class="bottle-highlight-bubble" cx="26" cy="110" r="1.5" />
+            <circle class="bottle-highlight-bubble" cx="74" cy="130" r="2.5" />
+          </svg>
+
+          <!-- Inside-Water Floating Percent Label -->
+          <div class="water-percentage-overlay" id="water-percentage-overlay">
+            <span class="pct-num" id="percentage-num">0</span><span class="pct-sign">%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quantitative Progress Display -->
+      <section class="progress-display">
+        <div class="progress-stats">
+          <div class="stat-item">
+            <span class="stat-label">Logged</span>
+            <span class="stat-value" id="current-intake-val">0</span>
+            <span class="stat-unit" id="current-intake-unit">oz</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-label">Target</span>
+            <span class="stat-value" id="target-intake-val">80</span>
+            <span class="stat-unit" id="target-intake-unit">oz</span>
+          </div>
+        </div>
+        
+        <!-- Progress Bar Indicator (Compact fallback/supplement) -->
+        <div class="progress-track">
+          <div class="progress-fill" id="compact-progress-fill"></div>
+        </div>
+      </section>
+
+      <!-- Water Logger Capsule Buttons -->
+      <section class="log-controls">
+        <div class="button-row">
+          <button class="log-btn quick-log" data-amount="8" aria-label="Add 8 ounces">
+            <span class="btn-ripple"></span>
+            <span class="btn-amount">8</span>
+            <span class="btn-unit-lbl">oz</span>
+          </button>
+          
+          <button class="log-btn quick-log" data-amount="16" aria-label="Add 16 ounces">
+            <span class="btn-ripple"></span>
+            <span class="btn-amount">16</span>
+            <span class="btn-unit-lbl">oz</span>
+          </button>
+          
+          <button class="log-btn quick-log" data-amount="24" aria-label="Add 24 ounces">
+            <span class="btn-ripple"></span>
+            <span class="btn-amount">24</span>
+            <span class="btn-unit-lbl">oz</span>
+          </button>
+        </div>
+
+        <!-- Custom Add & Drawer Triggers -->
+        <div class="extra-controls-row">
+          <button class="control-btn secondary-btn" id="open-custom-btn">
+            <span class="btn-icon">+</span> Custom Log
+          </button>
+          <button class="control-btn secondary-btn" id="open-history-btn">
+            <span class="btn-icon">📋</span> History
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Sliding Drawer: Weekly Logs & Analytics -->
+    <div class="drawer-overlay" id="history-drawer-overlay"></div>
+    <div class="drawer" id="history-drawer">
+      <div class="drawer-handle-bar">
+        <div class="drawer-handle"></div>
+      </div>
+      
+      <div class="drawer-header">
+        <h2>Hydration Logs</h2>
+        <button class="close-drawer-btn" id="close-history-btn" aria-label="Close History">✕</button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Weekly Stream Chart -->
+        <section class="chart-section">
+          <h3>Last 7 Days</h3>
+          <div class="bar-chart" id="weekly-chart">
+            <!-- Dynamically Rendered Bars -->
+          </div>
+        </section>
+
+        <!-- Log List of Today -->
+        <section class="history-list-section">
+          <div class="history-list-header">
+            <h3>Today's Sips</h3>
+            <button class="undo-btn hidden" id="undo-btn" title="Undo last sip">↩ Undo Last</button>
+          </div>
+          
+          <div class="sip-list-container" id="sip-list">
+            <!-- Dynamically Populated List of Logs -->
+            <div class="empty-state">No water logged yet today. Start drinking! 💦</div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Dialog: Custom Log Input -->
+    <div class="modal-overlay" id="custom-modal-overlay"></div>
+    <div class="modal" id="custom-modal">
+      <h3>Log Custom Amount</h3>
+      <div class="modal-body">
+        <div class="custom-input-group">
+          <input type="number" id="custom-amount-input" min="1" max="200" placeholder="Amount" pattern="\d*">
+          <span class="modal-unit-label" id="custom-modal-unit">oz</span>
+        </div>
+        <div class="quick-presets">
+          <button class="preset-tag" data-val="4">+4</button>
+          <button class="preset-tag" data-val="12">+12</button>
+          <button class="preset-tag" data-val="20">+20</button>
+          <button class="preset-tag" data-val="32">+32</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn cancel-btn" id="close-custom-modal-btn">Cancel</button>
+        <button class="modal-btn confirm-btn" id="confirm-custom-log-btn">Log Intake</button>
+      </div>
+    </div>
+
+    <!-- Overlay Panel: Settings & Configuration -->
+    <div class="modal-overlay" id="settings-modal-overlay"></div>
+    <div class="modal" id="settings-modal">
+      <h3>WaterLog Settings</h3>
+      <button class="modal-close-corner" id="close-settings-btn" aria-label="Close settings">✕</button>
+      <div class="modal-body">
+        
+        <!-- Unit Selection -->
+        <div class="settings-control-group">
+          <label>Volume System</label>
+          <div class="toggle-segmented" id="unit-toggle">
+            <button class="toggle-segment active" data-unit="oz">Imperial (oz)</button>
+            <button class="toggle-segment" data-unit="ml">Metric (ml)</button>
+          </div>
+        </div>
+
+        <!-- Daily Goal Setting -->
+        <div class="settings-control-group">
+          <label for="daily-goal-input">Daily Target</label>
+          <div class="input-spinner">
+            <button class="spinner-btn" id="goal-minus" aria-label="Decrease target">−</button>
+            <input type="number" id="daily-goal-input" min="10" max="5000" step="8">
+            <span class="spinner-unit" id="settings-goal-unit">oz</span>
+            <button class="spinner-btn" id="goal-plus" aria-label="Increase target">+</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Theme Selector -->
+        <div class="settings-control-group">
+          <label>Color Aesthetic</label>
+          <div class="theme-grid">
+            <button class="theme-card active" data-theme-val="ocean-drift">
+              <span class="theme-preview ocean"></span>
+              <span class="theme-name">Ocean Drift</span>
+            </button>
+            <button class="theme-card" data-theme-val="dark-abyss">
+              <span class="theme-preview abyss"></span>
+              <span class="theme-name">Dark Abyss</span>
+            </button>
+            <button class="theme-card" data-theme-val="sunset-glow">
+              <span class="theme-preview sunset"></span>
+              <span class="theme-name">Sunset Glow</span>
+            </button>
+            <button class="theme-card" data-theme-val="forest-rain">
+              <span class="theme-preview forest"></span>
+              <span class="theme-name">Forest Rain</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Audio & Vibration Effects -->
+        <div class="settings-control-group">
+          <label>Tactile & Audio Feedback</label>
+          <div class="setting-switch-row">
+            <span class="switch-lbl">Synthesized Sounds 🔊</span>
+            <label class="switch-toggle">
+              <input type="checkbox" id="sound-checkbox" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <div class="setting-switch-row">
+            <span class="switch-lbl">Haptic Vibrations 📳</span>
+            <label class="switch-toggle">
+              <input type="checkbox" id="haptic-checkbox" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Danger Zone (Reset Data) -->
+        <div class="settings-control-group danger-zone">
+          <button class="danger-btn" id="reset-data-btn">Reset All History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
