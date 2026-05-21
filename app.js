@@ -219,7 +219,7 @@ class CelebrationConfetti {
 const AppState = {
   // Configured default attributes
   currentIntake: 0,
-  dailyGoal: 80, // Default in oz
+  dailyGoal: 128, // Default in oz
   unit: 'oz', // 'oz' or 'ml'
   streak: 0,
   lastLoggedDate: '',
@@ -408,7 +408,7 @@ const AppState = {
 
   resetAll() {
     this.currentIntake = 0;
-    this.dailyGoal = this.unit === 'oz' ? 80 : 2400;
+    this.dailyGoal = this.unit === 'oz' ? 128 : 3800;
     this.streak = 0;
     this.lastLoggedDate = this.getTodayKey();
     this.sipsToday = [];
