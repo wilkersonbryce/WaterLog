@@ -458,6 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const customModalOverlay = document.getElementById('custom-modal-overlay');
   const settingsModal = document.getElementById('settings-modal');
   const settingsModalOverlay = document.getElementById('settings-modal-overlay');
+  const uptimeModal = document.getElementById('uptime-modal');
+  const uptimeModalOverlay = document.getElementById('uptime-modal-overlay');
   
   // Trigger Buttons
   const openHistoryBtn = document.getElementById('open-history-btn');
@@ -469,6 +471,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const openSettingsBtn = document.getElementById('open-settings-btn');
   const closeSettingsBtn = document.getElementById('close-settings-btn');
   const undoBtn = document.getElementById('undo-btn');
+  const openUptimeBtn = document.getElementById('open-uptime-btn');
+  const closeUptimeBtn = document.getElementById('close-uptime-btn');
+  const uptimeStartBtn = document.getElementById('uptime-start-btn');
+  const uptimeResetBtn = document.getElementById('uptime-reset-btn');
   const resetDataBtn = document.getElementById('reset-data-btn');
   
   // Custom Modal Units Label
@@ -483,6 +489,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const soundCheckbox = document.getElementById('sound-checkbox');
   const hapticCheckbox = document.getElementById('haptic-checkbox');
   const themeCards = document.querySelectorAll('.theme-card');
+  const uptimeDisplays = {
+    years: document.getElementById('uptime-years'),
+    months: document.getElementById('uptime-months'),
+    weeks: document.getElementById('uptime-weeks'),
+    days: document.getElementById('uptime-days'),
+    hours: document.getElementById('uptime-hours'),
+    minutes: document.getElementById('uptime-minutes'),
+    seconds: document.getElementById('uptime-seconds')
+  };
   
   // Containers
   const sipList = document.getElementById('sip-list');
@@ -610,6 +625,118 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.querySelector('.btn-amount').innerText = amt;
       btn.querySelector('.btn-unit-lbl').innerText = AppState.unit;
     });
+  }
+
+  // ------------------------------------------------------------------------
+  // Uptime Stopwatch Logic
+  // ------------------------------------------------------------------------
+  const UPTIME_STORAGE_KEY = 'waterlog_uptime_state';
+  const uptimeState = {
+    running: false,
+    startTime: null
+  };
+  let uptimeIntervalId = null;
+
+  function loadUptimeState() {
+    const data = localStorage.getItem(UPTIME_STORAGE_KEY);
+    if (!data) return;
+
+    try {
+      const parsed = JSON.parse(data);
+      const parsedStartTime = Number(parsed.startTime);
+
+      if (parsed.running && Number.isFinite(parsedStartTime)) {
+        uptimeState.running = true;
+        uptimeState.startTime = parsedStartTime;
+      }
+    } catch (e) {
+      console.error("Error decoding uptime state, using defaults:", e);
+    }
+  }
+
+  function saveUptimeState() {
+    localStorage.setItem(UPTIME_STORAGE_KEY, JSON.stringify(uptimeState));
+  }
+
+  function getUptimeElapsedSeconds() {
+    if (!uptimeState.running || !uptimeState.startTime) return 0;
+    return Math.max(0, Math.floor((Date.now() - uptimeState.startTime) / 1000));
+  }
+
+  function getUptimeParts(totalSeconds) {
+    const units = [
+      ['years', 365 * 24 * 60 * 60],
+      ['months', 30 * 24 * 60 * 60],
+      ['weeks', 7 * 24 * 60 * 60],
+      ['days', 24 * 60 * 60],
+      ['hours', 60 * 60],
+      ['minutes', 60],
+      ['seconds', 1]
+    ];
+
+    const parts = {};
+    let remainingSeconds = totalSeconds;
+
+    units.forEach(([unit, secondsInUnit]) => {
+      parts[unit] = Math.floor(remainingSeconds / secondsInUnit);
+      remainingSeconds %= secondsInUnit;
+    });
+
+    return parts;
+  }
+
+  function renderUptime() {
+    const parts = getUptimeParts(getUptimeElapsedSeconds());
+
+    // Determine the highest active time unit that is non-zero
+    const unitsOrder = ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'];
+    let highestActiveIndex = unitsOrder.length - 1; // Default to 'seconds'
+    for (let i = 0; i < unitsOrder.length; i++) {
+      if (parts[unitsOrder[i]] > 0) {
+        highestActiveIndex = i;
+        break;
+      }
+    }
+
+    Object.entries(uptimeDisplays).forEach(([unit, element]) => {
+      if (!element) return;
+      const value = parts[unit];
+      element.innerText = value;
+      
+      const row = element.closest('.uptime-row');
+      if (row) {
+        // Dynamic singular/plural label update
+        const labelSpan = row.querySelector('span');
+        if (labelSpan) {
+          let displayName = unit.charAt(0).toUpperCase() + unit.slice(1); // e.g. "Seconds"
+          if (value === 1) {
+            displayName = displayName.slice(0, -1); // "Seconds" -> "Second"
+          }
+          labelSpan.innerText = displayName;
+        }
+
+        const unitIndex = unitsOrder.indexOf(unit);
+        if (unitIndex < highestActiveIndex) {
+          row.style.display = 'none';
+        } else {
+          row.style.display = 'flex';
+        }
+      }
+    });
+
+    uptimeStartBtn.disabled = uptimeState.running;
+    uptimeStartBtn.setAttribute('aria-pressed', String(uptimeState.running));
+  }
+
+  function startUptimeTicker() {
+    if (uptimeIntervalId || !uptimeState.running) return;
+    uptimeIntervalId = setInterval(renderUptime, 250);
+  }
+
+  function stopUptimeTicker() {
+    if (!uptimeIntervalId) return;
+    clearInterval(uptimeIntervalId);
+    uptimeIntervalId = null;
   }
 
   // ------------------------------------------------------------------------
@@ -861,6 +988,45 @@ document.addEventListener('DOMContentLoaded', () => {
   closeSettingsBtn.addEventListener('click', closeSettingsModal);
   settingsModalOverlay.addEventListener('click', closeSettingsModal);
 
+  // Uptime modal stopwatch
+  openUptimeBtn.addEventListener('click', () => {
+    triggerHaptic('light');
+    renderUptime();
+    uptimeModalOverlay.classList.add('active');
+    uptimeModal.classList.add('active');
+  });
+
+  const closeUptimeModal = () => {
+    uptimeModalOverlay.classList.remove('active');
+    uptimeModal.classList.remove('active');
+  };
+
+  closeUptimeBtn.addEventListener('click', closeUptimeModal);
+  uptimeModalOverlay.addEventListener('click', closeUptimeModal);
+
+  uptimeStartBtn.addEventListener('click', () => {
+    if (uptimeState.running) return;
+
+    triggerHaptic('light');
+    uptimeState.running = true;
+    uptimeState.startTime = Date.now();
+    saveUptimeState();
+    renderUptime();
+    startUptimeTicker();
+  });
+
+  uptimeResetBtn.addEventListener('click', () => {
+    const confirmed = confirm("Are you sure you want to reset the uptime stopwatch? This will permanently clear the current timer session.");
+    if (!confirmed) return;
+
+    triggerHaptic('medium');
+    uptimeState.running = false;
+    uptimeState.startTime = null;
+    saveUptimeState();
+    stopUptimeTicker();
+    renderUptime();
+  });
+
   // Settings Unit Conversion Toggle Segmented
   unitSegments.forEach(seg => {
     seg.addEventListener('click', () => {
@@ -953,5 +1119,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   // First Render on Application Boot
   // ==========================================================================
+  loadUptimeState();
+  renderUptime();
+  startUptimeTicker();
   refreshVisuals();
 });

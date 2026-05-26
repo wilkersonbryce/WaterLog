@@ -286,10 +286,59 @@
           </div>
         </div>
 
+        <!-- Uptime Stopwatch -->
+        <div class="settings-control-group">
+          <label>Uptime</label>
+          <button class="settings-action-btn" id="open-uptime-btn">Uptime</button>
+        </div>
+
         <!-- Danger Zone (Reset Data) -->
         <div class="settings-control-group danger-zone">
           <button class="danger-btn" id="reset-data-btn">Reset All History</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Dialog: Uptime Stopwatch -->
+    <div class="modal-overlay" id="uptime-modal-overlay"></div>
+    <div class="modal uptime-modal" id="uptime-modal">
+      <h3>Uptime</h3>
+      <button class="modal-close-corner" id="close-uptime-btn" aria-label="Close uptime">x</button>
+      <div class="modal-body">
+        <div class="uptime-readout" aria-live="polite">
+          <div class="uptime-row">
+            <strong id="uptime-years">0</strong>
+            <span>Years</span>
+          </div>
+          <div class="uptime-row">
+            <strong id="uptime-months">0</strong>
+            <span>Months</span>
+          </div>
+          <div class="uptime-row">
+            <strong id="uptime-weeks">0</strong>
+            <span>Weeks</span>
+          </div>
+          <div class="uptime-row">
+            <strong id="uptime-days">0</strong>
+            <span>Days</span>
+          </div>
+          <div class="uptime-row">
+            <strong id="uptime-hours">0</strong>
+            <span>Hours</span>
+          </div>
+          <div class="uptime-row">
+            <strong id="uptime-minutes">0</strong>
+            <span>Minutes</span>
+          </div>
+          <div class="uptime-row">
+            <strong id="uptime-seconds">0</strong>
+            <span>Seconds</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn cancel-btn" id="uptime-reset-btn">Reset</button>
+        <button class="modal-btn confirm-btn" id="uptime-start-btn">Start</button>
       </div>
     </div>
   </div>
